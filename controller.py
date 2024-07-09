@@ -3,7 +3,7 @@ from keypad_controller import KeypadController
 from motion_sensor import MotionSensor
 
 class Controller:
-    def __init__(self, motion_sensor_pin, keypad_sleep_time=0.01, keypad_max_cycles=20, keypad_debounce_cycles=10):
+    def __init__(self, motion_sensor_pin=17, keypad_sleep_time=0.01, keypad_max_cycles=20, keypad_debounce_cycles=10):
         self.motion_sensor = MotionSensor(motion_sensor_pin)
         self.keypad_controller = KeypadController(
             sleep_time=keypad_sleep_time,

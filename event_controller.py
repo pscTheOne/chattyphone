@@ -12,11 +12,11 @@ from RealtimeSTT import RealtimeSTT  # Import RealtimeSTT
 openai.api_key = get_key()
 
 class EventController:
-    def __init__(self, motion_sensor_pin):
+    def __init__(self):
         self.stt_engine = pyttsx3.init()
         self.model = whisper.load_model("base")
 
-        self.controller = Controller(motion_sensor_pin)
+        self.controller = Controller()
         self.controller.keypad_controller.key_pressed = self.keypad_key_pressed
         self.controller.keypad_controller.key_released = self.keypad_key_released
 
@@ -101,9 +101,9 @@ class EventController:
         self.speak_response(response)
         self.controller.reset_keypad_input()  # Reset the keypad input
 
-    def ring_telefon(self):
-        print("Ringing the telefon...")
-        # Add code to ring the telefon (e.g., trigger a sound or LED)
+    def ring_telephone(self):
+        print("Ringing the telephone...")
+        # Add code to ring the telephone (e.g., trigger a sound or LED)
 
     def run(self):
         # Start RealtimeSTT in a separate thread
@@ -121,7 +121,7 @@ class EventController:
 
             if current_time - self.last_interaction_time > 300:
                 if self.controller.detect_motion():
-                    self.ring_telefon()
+                    self.ring_telephone()
                     self.current_user_id = None  # Reset user
                     self.last_interaction_time = current_time
 
@@ -129,7 +129,5 @@ class EventController:
 
 # Usage
 if __name__ == '__main__':
-    event_controller = EventController(
-        motion_sensor_pin=17
-    )
+    event_controller = EventController()
     event_controller.run()
