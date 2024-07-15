@@ -22,6 +22,7 @@ class EventController:
 
         self.current_user_id = None
         self.last_interaction_time = time.time()
+        self.phone_picked_up = False
 
         self.setup_audio_stream()
 
@@ -87,9 +88,10 @@ class EventController:
         self.last_interaction_time = time.time()  # Update the interaction time
         self.play_dtmf_tone(key)  # Play the DTMF tone for the pressed key
         if key == 'H':  # Receiver picked up
-            self.current_user_id = None
-            response = self.get_chatbot_response("Hello! Please identify yourself.", self.current_user_id)
-            self.speak_response(response)
+            self.phone_picked_up = True
+            # self.current_user_id = None
+            # response = self.get_chatbot_response("Hello! Please identify yourself.", self.current_user_id)
+            # self.speak_response(response)
         elif key == '#':  # Assuming # is the submit key
             self.handle_keypad_submit()
         else:
@@ -147,6 +149,6 @@ class EventController:
             time.sleep(0.1)  # Small delay to prevent excessive CPU usage
 
 # Usage
-if __name__ == '__main__':
-    event_controller = EventController()
-    event_controller.run()
+# if __name__ == '__main__':
+#    event_controller = EventController()
+#    event_controller.run()
