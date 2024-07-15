@@ -29,17 +29,19 @@ def record_and_transcribe():
     try:
         while True:
             data = stream.read(CHUNK)
+            print("Sending audio data...")
             sock.sendall(data)
     except KeyboardInterrupt:
-        pass
+        print("Interrupted by user.")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error during recording and sending: {e}")
     finally:
         print("Stopping recording...")
         stream.stop_stream()
         stream.close()
         p.terminate()
         sock.close()
+        print("Connection closed.")
 
 def generate_song():
     global transcribed_text
