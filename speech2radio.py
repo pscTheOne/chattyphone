@@ -7,7 +7,7 @@ import pyaudio
 # Configuration
 WHISPER_SERVER_IP = '34.118.49.79'
 WHISPER_SERVER_PORT = 43007
-MUSIC_GENERATION_SERVER = 'http://192.168.1.27:5000/generate'  
+MUSIC_GENERATION_SERVER = 'http://192.168.1.26:5000/generate'  # Assuming the server runs on port 5000
 RECORDING_DURATION = 120  # 2 minutes
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -32,7 +32,9 @@ def record_and_transcribe():
             sock.sendall(data)
             output = sock.recv(1024)
             if output:
-                transcribed_text.append(output.decode('utf-8').strip())
+                text = output.decode('utf-8').strip()
+                transcribed_text.append(text)
+                print(f"Transcribed: {text}")
     except KeyboardInterrupt:
         pass
     finally:
