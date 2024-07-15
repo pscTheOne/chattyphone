@@ -52,14 +52,15 @@ def generate_song(keywords):
 
 def check_song_status(song_id):
     try:
-        payload = {
-            "song_id": song_id
-        }
-        response = requests.post(SONG_STATUS_URL, headers=headers, json=payload)
+        response = requests.get(f"{SONG_STATUS_URL}?ids={song_id}", headers=headers)
         response.raise_for_status()
         result = response.json()
-        print(result)
-        return result.get('status') == 'ready'
+        if 'data' in result and result['data']:
+            song_status = result['data'][0].get('status')
+            return song_status == 'ready'
+        else:
+            print(f"Song status data not available: {result}")
+            return False
     except requests.exceptions.RequestException as e:
         print(f"Error checking song status: {e}")
         return False
