@@ -38,6 +38,7 @@ class KeypadController:
         self.tone_duration = 0.1  # Duration of the tone in seconds
         self.stream = None
         self.current_key = None
+        self.tone_position = 0  # Position in the tone array
 
     def setup_pins(self):
         pins = [self.blue, self.green, self.orange, self.grey, self.brown, self.red, self.yellow]
@@ -71,6 +72,7 @@ class KeypadController:
             self.stream = sd.OutputStream(samplerate=self.fs, channels=1, callback=self.audio_callback)
             self.stream.start()
             self.tone = tone
+            self.tone_position = 0
 
     def stop_tone(self):
         if self.stream is not None:
@@ -82,10 +84,13 @@ class KeypadController:
     def audio_callback(self, outdata, frames, time, status):
         if status.output_underflow:
             print("Output underflow: increase buffer size or reduce CPU load")
+
         if self.tone is not None:
-            outdata[:len(self.tone)] = self.tone.reshape(-1, 1)
-            if len(self.tone) < frames:
-                outdata[len(self.tone):] = 0
+            chunk = self.tone[self.tone_position:self.tone_position + frames]
+            outdata[:len(chunk)] = chunk.reshape(-1, 1)
+            if len(chunk) < frames:
+                outdata[len(chunk):] = 0
+            self.tone_position = (self.tone_position + frames) % len(self.tone)
         else:
             outdata.fill(0)
 
