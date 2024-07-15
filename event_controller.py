@@ -64,6 +64,7 @@ class EventController:
         return response_text
 
     def speak_response(self, response):
+        print("we should do some stuff here")
         #self.stt_engine.say(response)
         #self.stt_engine.runAndWait()
 
