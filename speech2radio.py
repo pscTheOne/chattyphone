@@ -30,9 +30,12 @@ def record_and_transcribe():
         while True:
             data = stream.read(CHUNK)
             sock.sendall(data)
-            output = sock.recv(1024)
-            if output:
-                transcribed_text.append(output.decode('utf-8').strip())
+            try:
+                output = sock.recv(1024)
+                if output:
+                    transcribed_text.append(output.decode('utf-8').strip())
+            except BlockingIOError:
+                continue
     except KeyboardInterrupt:
         pass
     finally:
