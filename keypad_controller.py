@@ -7,7 +7,7 @@ import os
 import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
 
 class KeypadController:
-    def __init__(self, sleep_time=0.01, max_cycles=20, debounce_cycles=20):
+    def __init__(self, sleep_time=0.01, max_cycles=5, debounce_cycles=5):
         self.sleep_time = sleep_time
         self.max_cycles = max_cycles
         self.debounce_cycles = debounce_cycles
@@ -70,6 +70,7 @@ class KeypadController:
         return key_info
 
     def run(self):
+        sleep(2)
         while True:
             for pin in self.keys:
                 self.keys[pin] = self.check_key(pin)
