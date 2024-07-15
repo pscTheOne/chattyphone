@@ -69,7 +69,8 @@ class KeypadController:
     def play_tone(self, key):
         tone = self.generate_dtmf_tone(key)
         if tone is not None:
-            self.stream = sd.OutputStream(samplerate=self.fs, channels=1, callback=lambda outdata, frames, time, status: outdata[:, 0] = tone[:frames])
+            self.tone = tone  # Save the tone to the instance for use in the callback
+            self.stream = sd.OutputStream(samplerate=self.fs, channels=1, callback=self.audio_callback)
             self.stream.start()
 
     def stop_tone(self):
@@ -77,6 +78,9 @@ class KeypadController:
             self.stream.stop()
             self.stream.close()
             self.stream = None
+
+    def audio_callback(self, outdata, frames, time, status):
+        outdata[:, 0] = self.tone[:frames]
 
     def key_pressed(self, key):
         print(key + " Pressed")
