@@ -40,6 +40,7 @@ def generate_song(keywords):
         response = requests.post(SONG_GENERATION_URL, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
+        print(result)
         if result['code'] == 0 and 'data' in result:
             return result['data'][0]['song_id']
         else:
