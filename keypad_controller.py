@@ -4,8 +4,7 @@ import time
 import signal
 import sys
 import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
-import sounddevice as sd
-import numpy as np
+import simpleaudio as sa
 
 class KeypadController:
     def __init__(self, sleep_time=0.01, max_cycles=5, debounce_cycles=5):
@@ -34,11 +33,8 @@ class KeypadController:
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
-        self.fs = 44100  # Sampling frequency
-        self.tone_duration = 0.1  # Duration of the tone in seconds
-        self.stream = None
         self.current_key = None
-        self.tone_position = 0  # Position in the tone array
+        self.current_play_obj = None
 
     def setup_pins(self):
         pins = [self.blue, self.green, self.orange, self.grey, self.brown, self.red, self.yellow]
@@ -49,50 +45,15 @@ class KeypadController:
         GPIO.cleanup()
         sys.exit(0)
 
-    def generate_dtmf_tone(self, key):
-        dtmf_freqs = {
-            '1': (697, 1209), '2': (697, 1336), '3': (697, 1477),
-            '4': (770, 1209), '5': (770, 1336), '6': (770, 1477),
-            '7': (852, 1209), '8': (852, 1336), '9': (852, 1477),
-            '*': (941, 1209), '0': (941, 1336), '#': (941, 1477),
-            'A': (697, 1633), 'B': (770, 1633), 'C': (852, 1633), 'D': (941, 1633)
-        }
-
-        if key not in dtmf_freqs:
-            return None
-
-        f1, f2 = dtmf_freqs[key]
-        t = np.linspace(0, self.tone_duration, int(self.fs * self.tone_duration), endpoint=False)
-        tone = 0.5 * (np.sin(2 * np.pi * f1 * t) + np.sin(2 * np.pi * f2 * t))
-        return tone
-
     def play_tone(self, key):
-        tone = self.generate_dtmf_tone(key)
-        if tone is not None:
-            self.stream = sd.OutputStream(samplerate=self.fs, channels=1, callback=self.audio_callback)
-            self.stream.start()
-            self.tone = tone
-            self.tone_position = 0
+        wav_file = f'dtmf_{key}.wav'
+        wave_obj = sa.WaveObject.from_wave_file(wav_file)
+        self.current_play_obj = wave_obj.play()
 
     def stop_tone(self):
-        if self.stream is not None:
-            self.stream.stop()
-            self.stream.close()
-            self.stream = None
-            sd.stop()
-
-    def audio_callback(self, outdata, frames, time, status):
-        if status.output_underflow:
-            print("Output underflow: increase buffer size or reduce CPU load")
-
-        if self.tone is not None:
-            chunk = self.tone[self.tone_position:self.tone_position + frames]
-            outdata[:len(chunk)] = chunk.reshape(-1, 1)
-            if len(chunk) < frames:
-                outdata[len(chunk):] = 0
-            self.tone_position = (self.tone_position + frames) % len(self.tone)
-        else:
-            outdata.fill(0)
+        if self.current_play_obj is not None:
+            self.current_play_obj.stop()
+            self.current_play_obj = None
 
     def key_pressed(self, key):
         print(key + " Pressed")
