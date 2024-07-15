@@ -92,7 +92,7 @@ def main():
                     print(f"Generated song with ID: {song_id}")
                     while True:
                         status, audio_url = check_song_status(song_id)
-                        if status == 'streaming':
+                        if status == 'complete':
                             download_and_play(audio_url)
                             break
                         else:
