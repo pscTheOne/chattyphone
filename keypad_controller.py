@@ -5,6 +5,8 @@ import signal
 import sys
 import os
 import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
+import sounddevice as sd
+import numpy as np
 
 class KeypadController:
     def __init__(self, sleep_time=0.01, max_cycles=5, debounce_cycles=5):
@@ -33,6 +35,11 @@ class KeypadController:
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
+        self.fs = 44100  # Sampling frequency
+        self.tone_duration = 1.0  # Duration of the tone in seconds
+        self.stream = None
+        self.current_key = None
+
     def setup_pins(self):
         pins = [self.blue, self.green, self.orange, self.grey, self.brown, self.red, self.yellow]
         for pin in pins:
@@ -42,11 +49,44 @@ class KeypadController:
         GPIO.cleanup()
         sys.exit(0)
 
+    def generate_dtmf_tone(self, key):
+        dtmf_freqs = {
+            '1': (697, 1209), '2': (697, 1336), '3': (697, 1477),
+            '4': (770, 1209), '5': (770, 1336), '6': (770, 1477),
+            '7': (852, 1209), '8': (852, 1336), '9': (852, 1477),
+            '*': (941, 1209), '0': (941, 1336), '#': (941, 1477),
+            'A': (697, 1633), 'B': (770, 1633), 'C': (852, 1633), 'D': (941, 1633)
+        }
+
+        if key not in dtmf_freqs:
+            return None
+
+        f1, f2 = dtmf_freqs[key]
+        t = np.linspace(0, self.tone_duration, int(self.fs * self.tone_duration), endpoint=False)
+        tone = np.sin(2 * np.pi * f1 * t) + np.sin(2 * np.pi * f2 * t)
+        return tone
+
+    def play_tone(self, key):
+        tone = self.generate_dtmf_tone(key)
+        if tone is not None:
+            self.stream = sd.OutputStream(samplerate=self.fs, channels=1, callback=lambda outdata, frames, time, status: outdata[:, 0] = tone[:frames])
+            self.stream.start()
+
+    def stop_tone(self):
+        if self.stream is not None:
+            self.stream.stop()
+            self.stream.close()
+            self.stream = None
+
     def key_pressed(self, key):
         print(key + " Pressed")
+        self.play_tone(key)
+        self.current_key = key
 
     def key_released(self, key):
         print(key + " Released")
+        self.stop_tone()
+        self.current_key = None
 
     def check_key(self, pin):
         key_info = self.keys[pin]
