@@ -10,7 +10,7 @@ from scipy.signal import resample
 from controller import Controller  # Import the Controller class
 from openai_key import get_key  # Import the get_key function
 
-openai_key = get_key()
+openai.api_key = get_key()
 
 class EventController:
     def __init__(self):
