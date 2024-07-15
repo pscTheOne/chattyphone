@@ -2,14 +2,15 @@ import requests
 import json
 import time
 from datetime import datetime
-import pygame
-import re
+from urllib.request import urlopen, urlretrieve
+from pydub import AudioSegment
+from pydub.playback import play
 
 TRANSCRIPTION_URL = "http://34.118.49.79:5000/transcriptions"
 SONG_GENERATION_URL = "https://api.sunoaiapi.com/api/v1/gateway/generate/gpt_desc"
 SONG_STATUS_URL = "https://api.sunoaiapi.com/api/v1/gateway/query"
 SONG_STREAM_URL = "https://api.sunoaiapi.com/api/v1/stream"
-API_KEY = "VCwrNNJ1msu3dOQmGr46AM3WLxoecqLl"  # Replace with your actual API key
+API_KEY = "mPc7Fke/LMcJnYqR1+6Z+9nOQDEHV+tA"  # Replace with your actual API key
 
 headers = {
     "api-key": API_KEY,
@@ -67,33 +68,16 @@ def check_song_status(song_id):
         print(f"Error checking song status: {e}")
         return None, None
 
-def get_direct_mp3_url(html_content):
-    print(html_content)
-    match = re.search(r'<source src="([^"]+)" type="audio/mp3">', html_content)
-    if match:
-        return match.group(1)
-    else:
-        return None
-
-def stream_song(audio_url):
+def download_and_play(audio_url):
     try:
-        print(f"Fetching audio HTML from {audio_url}")
-        #response = requests.get(audio_url)
-        #response.raise_for_status()
-        #direct_mp3_url = get_direct_mp3_url(audio_url)
-
-        if True:
-            #direct_mp3_url:
-            print(f"Streaming song from {audio_url}")
-            pygame.mixer.init()
-            pygame.mixer.music.load(audio_url)
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy():
-                pygame.time.Clock().tick(10)
-        else:
-            print("Failed to extract MP3 URL from HTML.")
+        print(f"Downloading song from {audio_url}")
+        local_filename, headers = urlretrieve(audio_url)
+        print(f"Downloaded to {local_filename}")
+        audio = AudioSegment.from_file(local_filename, format="mp3")
+        print("Playing song...")
+        play(audio)
     except Exception as e:
-        print(f"Error streaming song: {e}")
+        print(f"Error downloading or playing song: {e}")
 
 def main():
     while True:
@@ -109,11 +93,11 @@ def main():
                     while True:
                         status, audio_url = check_song_status(song_id)
                         if status == 'streaming':
-                            stream_song(audio_url)
+                            download_and_play(audio_url)
                             break
                         else:
-                            print(f"Song ID {song_id} status: {status}. Checking again in 10 seconds.")
-                            time.sleep(10)  # Check every 10 seconds
+                            print(f"Song ID {song_id} status: {status}. Checking again in 30 seconds.")
+                            time.sleep(30)  # Check every 30 seconds
                 else:
                     print("Failed to generate song.")
             else:
