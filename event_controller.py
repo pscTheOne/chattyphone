@@ -117,7 +117,7 @@ class EventController:
 
     def send_audio_to_server(self, audio_data):
         # Resample audio data from 48000 Hz to 16000 Hz
-        resampled_audio = resample(audio_data, int(len(audio_data) * 16000 / 48000)).astype('int16')
+        #resampled_audio = resample(audio_data, int(len(audio_data) * 16000 / 48000)).astype('int16')
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect(("34.118.49.79", 43007))
