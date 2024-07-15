@@ -80,11 +80,10 @@ def stream_song(audio_url):
         print(f"Fetching audio HTML from {audio_url}")
         response = requests.get(audio_url)
         response.raise_for_status()
-        #direct_mp3_url = get_direct_mp3_url(response.text)
+        direct_mp3_url = get_direct_mp3_url(response.text)
 
-        if True:
-            #direct_mp3_url:
-            #print(f"Streaming song from {direct_mp3_url}")
+        if direct_mp3_url:
+            print(f"Streaming song from {direct_mp3_url}")
             pygame.mixer.init()
             pygame.mixer.music.load(response)
             pygame.mixer.music.play()
