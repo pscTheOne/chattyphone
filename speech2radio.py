@@ -4,10 +4,10 @@ import time
 from datetime import datetime
 
 TRANSCRIPTION_URL = "http://34.118.49.79:5000/transcriptions"
-SONG_GENERATION_URL = "https://api.sunoaiapi.com/api/v1/generate"
-SONG_STATUS_URL = "https://api.sunoaiapi.com/api/v1/status"
+SONG_GENERATION_URL = "https://api.sunoaiapi.com/api/v1/generate/Music"
+SONG_STATUS_URL = "https://api.sunoaiapi.com/api/v1/gateway/query"
 SONG_STREAM_URL = "https://api.sunoaiapi.com/api/v1/stream"
-API_KEY = "mPc7Fke/LMcJnYqR1+6Z+9nOQDEHV+tA"
+API_KEY = "mPc7Fke/LMcJnYqR1+6Z+9nOQDEHV+tA"  # Replace with your actual API key
 
 headers = {
     "api-key": API_KEY,
@@ -52,7 +52,10 @@ def generate_song(keywords):
 
 def check_song_status(song_id):
     try:
-        response = requests.get(f"{SONG_STATUS_URL}/{song_id}", headers=headers)
+        payload = {
+            "song_id": song_id
+        }
+        response = requests.post(SONG_STATUS_URL, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
         return result.get('status') == 'ready'
@@ -92,5 +95,5 @@ def main():
 
         time.sleep(120)  # Sleep for 2 minutes
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
