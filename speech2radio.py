@@ -40,7 +40,6 @@ def generate_song(keywords):
         response = requests.post(SONG_GENERATION_URL, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
-        print(result)
         if result['code'] == 0 and 'data' in result:
             return result['data'][0]['song_id']
         else:
@@ -57,19 +56,18 @@ def check_song_status(song_id):
         response.raise_for_status()
         result = response.json()
         if 'data' in result and result['data']:
-            song_status = result['data'][0].get('status')
-            return song_status == 'ready'
+            song_data = result['data'][0]
+            return song_data.get('status') == 'streaming', song_data.get('audio_url')
         else:
             print(f"Song status data not available: {result}")
-            return False
+            return False, None
     except requests.exceptions.RequestException as e:
         print(f"Error checking song status: {e}")
-        return False
+        return False, None
 
-def stream_song(song_id):
+def stream_song(audio_url):
     try:
-        stream_url = f"{SONG_STREAM_URL}/{song_id}"
-        print(f"Streaming song from {stream_url}")
+        print(f"Streaming song from {audio_url}")
         # Code to handle streaming the song, e.g., opening the URL in a media player
     except Exception as e:
         print(f"Error streaming song: {e}")
@@ -85,10 +83,13 @@ def main():
                 song_id = generate_song(keywords)
                 if song_id:
                     print(f"Generated song with ID: {song_id}")
-                    while not check_song_status(song_id):
+                    song_ready, audio_url = False, None
+                    while not song_ready:
                         print(f"Checking status of song ID: {song_id}")
+                        song_ready, audio_url = check_song_status(song_id)
                         time.sleep(30)  # Check every 30 seconds
-                    stream_song(song_id)
+                    if audio_url:
+                        stream_song(audio_url)
                 else:
                     print("Failed to generate song.")
             else:
