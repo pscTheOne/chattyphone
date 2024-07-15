@@ -4,7 +4,7 @@ import time
 import signal
 import sys
 import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
-import simpleaudio as sa
+#import simpleaudio as sa
 
 class KeypadController:
     def __init__(self, sleep_time=0.01, max_cycles=5, debounce_cycles=5):

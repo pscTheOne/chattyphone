@@ -2,7 +2,7 @@
 import time
 import openai
 import sqlite3
-import pyttsx3
+#import pyttsx3
 import threading
 import socket
 import pyaudio
@@ -14,11 +14,10 @@ openai.api_key = get_key()
 
 class EventController:
     def __init__(self):
-        self.stt_engine = pyttsx3.init()
+        #self.stt_engine = pyttsx3.init()
 
         self.controller = Controller()
-        self.controller.keypad_controller.key_pressed = self.keypad_key_pressed
-        self.controller.keypad_controller.key_released = self.keypad_key_released
+        ##self.controller.keypad_controller.key_released = self.keypad_key_released
 
         self.current_user_id = None
         self.last_interaction_time = time.time()
@@ -65,8 +64,8 @@ class EventController:
         return response_text
 
     def speak_response(self, response):
-        self.stt_engine.say(response)
-        self.stt_engine.runAndWait()
+        #self.stt_engine.say(response)
+        #self.stt_engine.runAndWait()
 
     def play_dtmf_tone(self, key):
         dtmf = DTMF(key)
