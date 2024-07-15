@@ -70,7 +70,7 @@ class KeypadController:
         return key_info
 
     def run(self):
-        sleep(2)
+        time.sleep(2)
         while True:
             for pin in self.keys:
                 self.keys[pin] = self.check_key(pin)
