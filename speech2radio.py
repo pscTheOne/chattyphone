@@ -34,7 +34,7 @@ def extract_keywords(transcriptions):
 
 def generate_song(keywords):
     payload = {
-        "gpt_description_prompt": " ".join(keywords[0,10])
+        "gpt_description_prompt": " ".join(str(keywords[1,9]))
     }
     try:
         response = requests.post(SONG_GENERATION_URL, headers=headers, json=payload)
