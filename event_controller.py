@@ -133,18 +133,18 @@ class EventController:
         stt_thread.start()
 
         while True:
-            if self.controller.detect_motion():
-                self.last_interaction_time = self.controller.get_last_motion_time()
+        #    if self.controller.detect_motion():
+        #        self.last_interaction_time = self.controller.get_last_motion_time()
 
             self.controller.run_keypad()
 
             current_time = time.time()
 
-            if current_time - self.last_interaction_time > 300:
-                if self.controller.detect_motion():
-                    self.ring_telephone()
-                    self.current_user_id = None  # Reset user
-                    self.last_interaction_time = current_time
+        #    if current_time - self.last_interaction_time > 300:
+        #        if self.controller.detect_motion():
+        #            self.ring_telephone()
+        #            self.current_user_id = None  # Reset user
+        #            self.last_interaction_time = current_time
 
             time.sleep(0.1)  # Small delay to prevent excessive CPU usage
 
