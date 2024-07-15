@@ -7,7 +7,7 @@ TRANSCRIPTION_URL = "http://34.118.49.79:5000/transcriptions"
 SONG_GENERATION_URL = "https://api.sunoaiapi.com/api/v1/generate"
 SONG_STATUS_URL = "https://api.sunoaiapi.com/api/v1/status"
 SONG_STREAM_URL = "https://api.sunoaiapi.com/api/v1/stream"
-API_KEY = "mPc7Fke/LMcJnYqR1+6Z+9nOQDEHV+tA"  
+API_KEY = "mPc7Fke/LMcJnYqR1+6Z+9nOQDEHV+tA"
 
 headers = {
     "api-key": API_KEY,
@@ -92,5 +92,5 @@ def main():
 
         time.sleep(120)  # Sleep for 2 minutes
 
-if __name__": "__main__":
+if __name__ == '__main__':
     main()
