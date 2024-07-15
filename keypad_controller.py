@@ -34,6 +34,7 @@ class KeypadController:
         signal.signal(signal.SIGINT, self.signal_handler)
 
         self.current_key = None
+        self.current_wave_obj = None
         self.current_play_obj = None
 
     def setup_pins(self):
@@ -47,8 +48,8 @@ class KeypadController:
 
     def play_tone(self, key):
         wav_file = f'dtmf_{key}.wav'
-        wave_obj = sa.WaveObject.from_wave_file(wav_file)
-        self.current_play_obj = wave_obj.play()
+        self.current_wave_obj = sa.WaveObject.from_wave_file(wav_file)
+        self.current_play_obj = self.current_wave_obj.play()
 
     def stop_tone(self):
         if self.current_play_obj is not None:
@@ -57,7 +58,8 @@ class KeypadController:
 
     def key_pressed(self, key):
         print(key + " Pressed")
-        self.play_tone(key)
+        if self.current_key != key:
+            self.play_tone(key)
         self.current_key = key
 
     def key_released(self, key):
@@ -74,7 +76,6 @@ class KeypadController:
                     key_info['cycles'] = 0
                     key_info['key_was_down'] = False
                     key_info['key_measured'] = key_info['default']
-
         else:
             key_info['cycles'] += 1
             if not key_info['key_was_down']:
@@ -91,6 +92,8 @@ class KeypadController:
         while True:
             for pin in self.keys:
                 self.keys[pin] = self.check_key(pin)
+            if self.current_play_obj is not None and not self.current_play_obj.is_playing():
+                self.current_play_obj = self.current_wave_obj.play()
             time.sleep(self.sleep_time)  # Adjust sleep time as necessary
 
 if __name__ == '__main__':
