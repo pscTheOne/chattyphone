@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 
 TRANSCRIPTION_URL = "http://34.118.49.79:5000/transcriptions"
-SONG_GENERATION_URL = "https://api.sunoaiapi.com/api/v1/generate/Music"
+SONG_GENERATION_URL = "https://api.sunoaiapi.com/api/v1/gateway/generate/Music"
 SONG_STATUS_URL = "https://api.sunoaiapi.com/api/v1/gateway/query"
 SONG_STREAM_URL = "https://api.sunoaiapi.com/api/v1/stream"
 API_KEY = "mPc7Fke/LMcJnYqR1+6Z+9nOQDEHV+tA"  # Replace with your actual API key
