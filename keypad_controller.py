@@ -48,6 +48,7 @@ class KeypadController:
 
     def play_tone(self, key):
         wav_file = f'dtmf_{key}.wav'
+        print(key)
         #self.current_wave_obj = sa.WaveObject.from_wave_file(wav_file)
         #self.current_play_obj = self.current_wave_obj.play()
 
