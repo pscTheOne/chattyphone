@@ -30,11 +30,11 @@ def extract_keywords(transcriptions):
         if len(parts) > 2:
             sentence = " ".join(parts[2:])
             keywords.extend(sentence.split())
-    return keywords
+    return keywords[:10]  # Limit to 10 keywords
 
 def generate_song(keywords):
     payload = {
-    "gpt_description_prompt": str(keywords)
+        "gpt_description_prompt": " ".join(keywords)
     }
     try:
         response = requests.post(SONG_GENERATION_URL, headers=headers, json=payload)
