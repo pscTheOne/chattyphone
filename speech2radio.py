@@ -40,10 +40,10 @@ def generate_song(keywords):
         response = requests.post(SONG_GENERATION_URL, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
-        if 'song_id' in result:
-            return result['song_id']
+        if result['code'] == 0 and 'data' in result:
+            return result['data'][0]['song_id']
         else:
-            print(f"Failed to generate song: {result.get('error', 'Unknown error')}")
+            print(f"Failed to generate song: {result.get('msg', 'Unknown error')}")
             print(result)
             return None
     except requests.exceptions.RequestException as e:
@@ -58,6 +58,7 @@ def check_song_status(song_id):
         response = requests.post(SONG_STATUS_URL, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
+        print(result)
         return result.get('status') == 'ready'
     except requests.exceptions.RequestException as e:
         print(f"Error checking song status: {e}")
