@@ -3,7 +3,7 @@
 import numpy as np
 import soundfile as sf
 
-def generate_dtmf_tone(key, duration=5.0, fs=16000):
+def generate_dtmf_tone(key, duration=5.0, fs=16000, volume=0.1):
     dtmf_freqs = {
         '1': (697, 1209), '2': (697, 1336), '3': (697, 1477),
         '4': (770, 1209), '5': (770, 1336), '6': (770, 1477),
@@ -17,11 +17,11 @@ def generate_dtmf_tone(key, duration=5.0, fs=16000):
 
     f1, f2 = dtmf_freqs[key]
     t = np.linspace(0, duration, int(fs * duration), endpoint=False)
-    tone = 0.5 * (np.sin(2 * np.pi * f1 * t) + np.sin(2 * np.pi * f2 * t))
+    tone = volume * (np.sin(2 * np.pi * f1 * t) + np.sin(2 * np.pi * f2 * t))
     return tone
 
-def save_dtmf_tone(key, duration=5.0, fs=16000):
-    tone = generate_dtmf_tone(key, duration, fs)
+def save_dtmf_tone(key, duration=5.0, fs=16000, volume=0.5):
+    tone = generate_dtmf_tone(key, duration, fs, volume)
     if tone is not None:
         sf.write(f'dtmf_{key}.wav', tone, fs)
 
