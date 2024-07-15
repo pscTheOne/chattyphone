@@ -149,6 +149,6 @@ class EventController:
             time.sleep(0.1)  # Small delay to prevent excessive CPU usage
 
 # Usage
- if __name__ == '__main__':
+if __name__ == '__main__':
     event_controller = EventController()
     event_controller.run()
