@@ -68,6 +68,7 @@ def check_song_status(song_id):
         return None, None
 
 def get_direct_mp3_url(html_content):
+    print(html_content)
     match = re.search(r'<source src="([^"]+)" type="audio/mp3">', html_content)
     if match:
         return match.group(1)
