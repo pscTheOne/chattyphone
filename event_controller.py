@@ -2,19 +2,19 @@
 import time
 import openai
 import sqlite3
-import whisper
 import pyttsx3
 import threading
+import socket
+import pyaudio
+from scipy.signal import resample
 from controller import Controller  # Import the Controller class
 from openai_key import get_key  # Import the get_key function
-from RealtimeSTT import RealtimeSTT  # Import RealtimeSTT
 
-openai.api_key = get_key()
+openai_key = get_key()
 
 class EventController:
     def __init__(self):
         self.stt_engine = pyttsx3.init()
-        self.model = whisper.load_model("base")
 
         self.controller = Controller()
         self.controller.keypad_controller.key_pressed = self.keypad_key_pressed
@@ -23,8 +23,11 @@ class EventController:
         self.current_user_id = None
         self.last_interaction_time = time.time()
 
-        self.realtime_stt = RealtimeSTT(language='en')  # Initialize RealtimeSTT for English
-        self.realtime_stt.set_callback(self.handle_voice_input)
+        self.setup_audio_stream()
+
+    def setup_audio_stream(self):
+        self.audio = pyaudio.PyAudio()
+        self.stream = self.audio.open(format=pyaudio.paInt16, channels=1, rate=48000, input=True, frames_per_buffer=1024)
 
     def create_connection(self):
         conn = sqlite3.connect('conversations.db')
@@ -67,7 +70,7 @@ class EventController:
     def play_dtmf_tone(self, key):
         dtmf = DTMF(key)
         tone = dtmf.to_audio_segment(duration=300)
-        play_obj = sa.play_buffer(ttone.raw_data, num_channels=1, bytes_per_sample=2, sample_rate=44100)
+        play_obj = sa.play_buffer(tone.raw_data, num_channels=1, bytes_per_sample=2, sample_rate=44100)
         play_obj.wait_done()
 
     def handle_voice_input(self, transcription):
@@ -105,9 +108,25 @@ class EventController:
         print("Ringing the telephone...")
         # Add code to ring the telephone (e.g., trigger a sound or LED)
 
+    def stt_loop(self):
+        while True:
+            audio_data = self.stream.read(1024)
+            self.send_audio_to_server(audio_data)
+
+    def send_audio_to_server(self, audio_data):
+        # Resample audio data from 48000 Hz to 16000 Hz
+        resampled_audio = resample(audio_data, int(len(audio_data) * 16000 / 48000)).astype('int16')
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect(("34.118.49.79", 43007))
+            s.sendall(resampled_audio.tobytes())
+            transcription = s.recv(1024).decode('utf-8')
+
+        if transcription:
+            self.handle_voice_input(transcription)
+
     def run(self):
-        # Start RealtimeSTT in a separate thread
-        stt_thread = threading.Thread(target=self.realtime_stt.start)
+        stt_thread = threading.Thread(target=self.stt_loop)
         stt_thread.daemon = True
         stt_thread.start()
 
