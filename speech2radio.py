@@ -1,14 +1,18 @@
 import socket
 import time
 import threading
-import subprocess
 import requests
+import pyaudio
 
 # Configuration
 WHISPER_SERVER_IP = '34.118.49.79'
 WHISPER_SERVER_PORT = 43007
 MUSIC_GENERATION_SERVER = 'http://192.168.1.26:5000/generate'  # Assuming the server runs on port 5000
 RECORDING_DURATION = 120  # 2 minutes
+CHUNK = 960  # 960 samples per chunk to fit with rate
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 16000
 
 transcribed_text = []
 
@@ -17,26 +21,26 @@ def record_and_transcribe():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((WHISPER_SERVER_IP, WHISPER_SERVER_PORT))
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('0.0.0.0', 0))
-        s.listen(1)
-        print(f'Listening on port {s.getsockname()[1]} for arecord...')
+    p = pyaudio.PyAudio()
+    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
 
-        # Start recording and send audio to the socket
-        arecord_cmd = f'arecord -f S16_LE -c1 -r 16000 -t raw -D default | nc 127.0.0.1 {s.getsockname()[1]}'
-        arecord_process = subprocess.Popen(arecord_cmd, shell=True)
+    print("Recording...")
 
-        conn, addr = s.accept()
-        with conn:
-            print(f'Connected by {addr}')
-            while True:
-                data = conn.recv(1024)
-                if not data:
-                    break
-                sock.sendall(data)
-                output = sock.recv(1024)
-                if output:
-                    transcribed_text.append(output.decode('utf-8').strip())
+    try:
+        while True:
+            data = stream.read(CHUNK)
+            sock.sendall(data)
+            output = sock.recv(1024)
+            if output:
+                transcribed_text.append(output.decode('utf-8').strip())
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print("Stopping recording...")
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+        sock.close()
 
 def generate_song():
     global transcribed_text
