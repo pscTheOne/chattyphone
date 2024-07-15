@@ -112,7 +112,7 @@ class EventController:
 
     def stt_loop(self):
         while True:
-            audio_data = self.stream.read(1024)
+            audio_data = self.stream.read(960)
             self.send_audio_to_server(audio_data)
 
     def send_audio_to_server(self, audio_data):
@@ -122,7 +122,7 @@ class EventController:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect(("34.118.49.79", 43007))
             s.sendall(resampled_audio.tobytes())
-            transcription = s.recv(1024).decode('utf-8')
+            transcription = s.recv(960).decode('utf-8')
 
         if transcription:
             self.handle_voice_input(transcription)
