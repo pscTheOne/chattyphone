@@ -44,6 +44,7 @@ def generate_song(keywords):
             return result['song_id']
         else:
             print(f"Failed to generate song: {result.get('error', 'Unknown error')}")
+            print(result)
             return None
     except requests.exceptions.RequestException as e:
         print(f"Error generating song: {e}")
