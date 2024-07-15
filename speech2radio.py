@@ -3,8 +3,7 @@ import json
 import time
 from datetime import datetime
 import pygame
-import io
-from urllib.request import urlopen
+import re
 
 TRANSCRIPTION_URL = "http://34.118.49.79:5000/transcriptions"
 SONG_GENERATION_URL = "https://api.sunoaiapi.com/api/v1/gateway/generate/gpt_desc"
@@ -68,14 +67,29 @@ def check_song_status(song_id):
         print(f"Error checking song status: {e}")
         return None, None
 
+def get_direct_mp3_url(html_content):
+    match = re.search(r'<source src="([^"]+)" type="audio/mp3">', html_content)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
 def stream_song(audio_url):
     try:
-        print(f"Streaming song from {audio_url}")
-        pygame.mixer.init()
-        pygame.mixer.music.load(urlopen(audio_url))
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy():
-            pygame.time.Clock().tick(10)
+        print(f"Fetching audio HTML from {audio_url}")
+        response = requests.get(audio_url)
+        response.raise_for_status()
+        direct_mp3_url = get_direct_mp3_url(response.text)
+
+        if direct_mp3_url:
+            print(f"Streaming song from {direct_mp3_url}")
+            pygame.mixer.init()
+            pygame.mixer.music.load(direct_mp3_url)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
+        else:
+            print("Failed to extract MP3 URL from HTML.")
     except Exception as e:
         print(f"Error streaming song: {e}")
 
