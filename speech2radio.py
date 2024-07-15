@@ -57,13 +57,13 @@ def check_song_status(song_id):
         result = response.json()
         if 'data' in result and result['data']:
             song_data = result['data'][0]
-            return song_data.get('status') == 'streaming', song_data.get('audio_url')
+            return song_data.get('status'), song_data.get('audio_url')
         else:
             print(f"Song status data not available: {result}")
-            return False, None
+            return None, None
     except requests.exceptions.RequestException as e:
         print(f"Error checking song status: {e}")
-        return False, None
+        return None, None
 
 def stream_song(audio_url):
     try:
@@ -83,13 +83,14 @@ def main():
                 song_id = generate_song(keywords)
                 if song_id:
                     print(f"Generated song with ID: {song_id}")
-                    song_ready, audio_url = False, None
-                    while not song_ready:
-                        print(f"Checking status of song ID: {song_id}")
-                        song_ready, audio_url = check_song_status(song_id)
-                        time.sleep(30)  # Check every 30 seconds
-                    if audio_url:
-                        stream_song(audio_url)
+                    while True:
+                        status, audio_url = check_song_status(song_id)
+                        if status == 'streaming':
+                            stream_song(audio_url)
+                            break
+                        else:
+                            print(f"Song ID {song_id} status: {status}. Checking again in 30 seconds.")
+                            time.sleep(30)  # Check every 30 seconds
                 else:
                     print("Failed to generate song.")
             else:
