@@ -30,9 +30,10 @@ def record_and_transcribe():
         while True:
             data = stream.read(CHUNK)
             sock.sendall(data)
-            # Remove the recv call, as the server script does not send data back
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        print(f"Error: {e}")
     finally:
         print("Stopping recording...")
         stream.stop_stream()
@@ -58,8 +59,13 @@ def generate_song():
             transcribed_text = []
 
 if __name__ == "__main__":
-    transcribe_thread = threading.Thread(target=record_and_transcribe)
-    transcribe_thread.daemon = True
-    transcribe_thread.start()
+    try:
+        transcribe_thread = threading.Thread(target=record_and_transcribe)
+        transcribe_thread.daemon = True
+        transcribe_thread.start()
 
-    generate_song()
+        generate_song()
+    except KeyboardInterrupt:
+        print("Program interrupted. Exiting...")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
