@@ -78,14 +78,15 @@ def get_direct_mp3_url(html_content):
 def stream_song(audio_url):
     try:
         print(f"Fetching audio HTML from {audio_url}")
-        response = requests.get(audio_url)
-        response.raise_for_status()
-        direct_mp3_url = get_direct_mp3_url(response.text)
+        #response = requests.get(audio_url)
+        #response.raise_for_status()
+        #direct_mp3_url = get_direct_mp3_url(audio_url)
 
-        if direct_mp3_url:
+        if True:
+            #direct_mp3_url:
             print(f"Streaming song from {direct_mp3_url}")
             pygame.mixer.init()
-            pygame.mixer.music.load(response)
+            pygame.mixer.music.load(audio_url)
             pygame.mixer.music.play()
             while pygame.mixer.music.get_busy():
                 pygame.time.Clock().tick(10)
@@ -111,8 +112,8 @@ def main():
                             stream_song(audio_url)
                             break
                         else:
-                            print(f"Song ID {song_id} status: {status}. Checking again in 30 seconds.")
-                            time.sleep(30)  # Check every 30 seconds
+                            print(f"Song ID {song_id} status: {status}. Checking again in 10 seconds.")
+                            time.sleep(10)  # Check every 10 seconds
                 else:
                     print("Failed to generate song.")
             else:
