@@ -1,73 +1,60 @@
-import socket
-import time
-import threading
 import requests
-import pyaudio
+import json
+import time
+from datetime import datetime
 
-# Configuration
-WHISPER_SERVER_IP = '34.118.49.79'
-WHISPER_SERVER_PORT = 43007
-MUSIC_GENERATION_SERVER = 'http://192.168.1.26:5000/generate'  # Assuming the server runs on port 5000
-RECORDING_DURATION = 120  # 2 minutes
-CHUNK = 960  # 960 samples per chunk to fit with rate
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 16000
+TRANSCRIPTION_URL = "http://34.118.49.79:5000/transcriptions"
+GENERATION_URL = "http://192.168.1.27:5000/generate"
 
-transcribed_text = []
-
-def record_and_transcribe():
-    global transcribed_text
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((WHISPER_SERVER_IP, WHISPER_SERVER_PORT))
-
-    p = pyaudio.PyAudio()
-    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
-
-    print("Recording...")
-
+def fetch_transcriptions():
     try:
-        while True:
-            data = stream.read(CHUNK)
-            print("Sending audio data...")
-            sock.sendall(data)
-    except KeyboardInterrupt:
-        print("Interrupted by user.")
-    except Exception as e:
-        print(f"Error during recording and sending: {e}")
-    finally:
-        print("Stopping recording...")
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
-        sock.close()
-        print("Connection closed.")
+        response = requests.get(TRANSCRIPTION_URL)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching transcriptions: {e}")
+        return []
 
-def generate_song():
-    global transcribed_text
+def extract_keywords(transcriptions):
+    keywords = []
+    for transcription in transcriptions:
+        parts = transcription.split()
+        if len(parts) > 2:
+            sentence = " ".join(parts[2:])
+            keywords.extend(sentence.split())
+    return keywords
+
+def generate_song(keywords):
+    payload = {
+        "method": "prompt",
+        "prompt": " ".join(keywords)
+    }
+    try:
+        response = requests.post(GENERATION_URL, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        if result and 'song_id' in result:
+            print(f"Song generation submitted. Song ID: {result['song_id']}")
+        else:
+            print(f"Failed to generate song: {result.get('error', 'Unknown error')}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error generating song: {e}")
+
+def main():
     while True:
-        time.sleep(RECORDING_DURATION)
-        if transcribed_text:
-            collected_text = ' '.join(transcribed_text)
-            data = {
-                'method': 'prompt',
-                'prompt': collected_text
-            }
-            response = requests.post(MUSIC_GENERATION_SERVER, json=data)
-            if response.status_code == 202:
-                print(f"Song generation started. Song ID: {response.json().get('song_id')}")
+        print(f"Fetching transcriptions at {datetime.now()}")
+        transcriptions = fetch_transcriptions()
+        if transcriptions:
+            keywords = extract_keywords(transcriptions)
+            if keywords:
+                print(f"Generating song with keywords: {keywords}")
+                generate_song(keywords)
             else:
-                print(f"Error generating song: {response.json().get('error')}")
-            transcribed_text = []
+                print("No keywords extracted from transcriptions.")
+        else:
+            print("No transcriptions fetched.")
+
+        time.sleep(120)  # Sleep for 2 minutes
 
 if __name__ == "__main__":
-    try:
-        transcribe_thread = threading.Thread(target=record_and_transcribe)
-        transcribe_thread.daemon = True
-        transcribe_thread.start()
-
-        generate_song()
-    except KeyboardInterrupt:
-        print("Program interrupted. Exiting...")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
+    main()
