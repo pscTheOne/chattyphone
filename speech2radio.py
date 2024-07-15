@@ -84,7 +84,7 @@ def stream_song(audio_url):
 
         if True:
             #direct_mp3_url:
-            print(f"Streaming song from {direct_mp3_url}")
+            print(f"Streaming song from {audio_url}")
             pygame.mixer.init()
             pygame.mixer.music.load(audio_url)
             pygame.mixer.music.play()
