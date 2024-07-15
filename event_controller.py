@@ -121,7 +121,7 @@ class EventController:
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect(("34.118.49.79", 43007))
-            s.sendall(resampled_audio.tobytes())
+            s.sendall(audio_data.tobytes())
             transcription = s.recv(960).decode('utf-8')
 
         if transcription:
