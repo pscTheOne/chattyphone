@@ -48,8 +48,8 @@ class KeypadController:
 
     def play_tone(self, key):
         wav_file = f'dtmf_{key}.wav'
-        self.current_wave_obj = sa.WaveObject.from_wave_file(wav_file)
-        self.current_play_obj = self.current_wave_obj.play()
+        #self.current_wave_obj = sa.WaveObject.from_wave_file(wav_file)
+        #self.current_play_obj = self.current_wave_obj.play()
 
     def stop_tone(self):
         if self.current_play_obj is not None:
