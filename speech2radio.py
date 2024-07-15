@@ -4,7 +4,15 @@ import time
 from datetime import datetime
 
 TRANSCRIPTION_URL = "http://34.118.49.79:5000/transcriptions"
-GENERATION_URL = "http://192.168.1.27:5000/generate"
+SONG_GENERATION_URL = "https://api.sunoaiapi.com/api/v1/generate"
+SONG_STATUS_URL = "https://api.sunoaiapi.com/api/v1/status"
+SONG_STREAM_URL = "https://api.sunoaiapi.com/api/v1/stream"
+API_KEY = "mPc7Fke/LMcJnYqR1+6Z+9nOQDEHV+tA"  
+
+headers = {
+    "api-key": API_KEY,
+    "Content-Type": "application/json"
+}
 
 def fetch_transcriptions():
     try:
@@ -30,15 +38,35 @@ def generate_song(keywords):
         "prompt": " ".join(keywords)
     }
     try:
-        response = requests.post(GENERATION_URL, json=payload)
+        response = requests.post(SONG_GENERATION_URL, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
-        if result and 'song_id' in result:
-            print(f"Song generation submitted. Song ID: {result['song_id']}")
+        if 'song_id' in result:
+            return result['song_id']
         else:
             print(f"Failed to generate song: {result.get('error', 'Unknown error')}")
+            return None
     except requests.exceptions.RequestException as e:
         print(f"Error generating song: {e}")
+        return None
+
+def check_song_status(song_id):
+    try:
+        response = requests.get(f"{SONG_STATUS_URL}/{song_id}", headers=headers)
+        response.raise_for_status()
+        result = response.json()
+        return result.get('status') == 'ready'
+    except requests.exceptions.RequestException as e:
+        print(f"Error checking song status: {e}")
+        return False
+
+def stream_song(song_id):
+    try:
+        stream_url = f"{SONG_STREAM_URL}/{song_id}"
+        print(f"Streaming song from {stream_url}")
+        # Code to handle streaming the song, e.g., opening the URL in a media player
+    except Exception as e:
+        print(f"Error streaming song: {e}")
 
 def main():
     while True:
@@ -48,7 +76,15 @@ def main():
             keywords = extract_keywords(transcriptions)
             if keywords:
                 print(f"Generating song with keywords: {keywords}")
-                generate_song(keywords)
+                song_id = generate_song(keywords)
+                if song_id:
+                    print(f"Generated song with ID: {song_id}")
+                    while not check_song_status(song_id):
+                        print(f"Checking status of song ID: {song_id}")
+                        time.sleep(30)  # Check every 30 seconds
+                    stream_song(song_id)
+                else:
+                    print("Failed to generate song.")
             else:
                 print("No keywords extracted from transcriptions.")
         else:
@@ -56,5 +92,5 @@ def main():
 
         time.sleep(120)  # Sleep for 2 minutes
 
-if __name__ == "__main__":
+if __name__": "__main__":
     main()
