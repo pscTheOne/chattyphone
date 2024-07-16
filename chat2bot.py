@@ -4,6 +4,7 @@ import numpy as np
 import threading
 import queue
 import sys
+import time
 import os
 from scipy.io.wavfile import write
 from keypad_controller import KeypadController
@@ -36,12 +37,12 @@ def record_audio(samplerate, channels):
 def save_audio_to_wav(audio_data, samplerate, filename):
     write(filename, samplerate, audio_data.astype(np.int16))
 
-# Function to transcribe audio using Whisper
+# Function to transcribe audio using OpenAI
 def transcribe_audio(filename):
     with open(filename, "rb") as audio_file:
-        response = openai.Audio.transcribe(
-            model="whisper-1",
-            file=audio_file
+        response = openai.Audio.transcriptions.create(
+            file=audio_file,
+            model="whisper-1"
         )
     return response['text']
 
