@@ -11,7 +11,8 @@ from keypad_controller import KeypadController
 from openai_key import get_key
 
 # Set up your OpenAI API key
-openai.api_key = get_key()
+openai_api_key = get_key()
+client = openai.Client(api_key=openai_api_key)
 
 # Global variables
 q = queue.Queue()
@@ -40,7 +41,7 @@ def save_audio_to_wav(audio_data, samplerate, filename):
 # Function to transcribe audio using OpenAI
 def transcribe_audio(filename):
     with open(filename, "rb") as audio_file:
-        response = openai.Audio.transcribe(
+        response = client.audio.transcriptions.create(
             model="whisper-1",
             file=audio_file
         )
@@ -48,7 +49,7 @@ def transcribe_audio(filename):
 
 # Function to interact with ChatGPT
 def chat_with_gpt(transcribed_text):
-    response = openai.Completion.create(
+    response = client.completions.create(
         model="text-davinci-003",
         prompt=transcribed_text,
         max_tokens=100
@@ -57,7 +58,7 @@ def chat_with_gpt(transcribed_text):
 
 # Function to create speech using OpenAI's voice synthesis
 def create_speech(text):
-    response = openai.Audio.create(
+    response = client.audio.create(
         model="voice-synthesis",
         text=text
     )
