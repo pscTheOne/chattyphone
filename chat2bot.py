@@ -6,6 +6,7 @@ import queue
 import sys
 from keypad_controller import KeypadController
 from openai_key import get_key
+import time
 
 # Set up your OpenAI API key
 openai.api_key = get_key()
@@ -100,6 +101,9 @@ def main():
 
     controller.key_pressed = listener.key_pressed
     controller.key_released = listener.key_released
+    while True:
+        wait(1)
+        pass
 
 
 if __name__ == "__main__":
