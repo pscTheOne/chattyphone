@@ -12,7 +12,7 @@ from openai_key import get_key
 
 # Set up your OpenAI API key
 openai_api_key = get_key()
-client = openai.Client(api_key=openai_api_key)
+openai.api_key = openai_api_key
 
 # Global variables
 q = queue.Queue()
@@ -41,7 +41,7 @@ def save_audio_to_wav(audio_data, samplerate, filename):
 # Function to transcribe audio using OpenAI
 def transcribe_audio(filename):
     with open(filename, "rb") as audio_file:
-        response = client.audio.transcriptions.create(
+        response = openai.Audio.transcribe(
             model="whisper-1",
             file=audio_file
         )
@@ -49,7 +49,7 @@ def transcribe_audio(filename):
 
 # Function to interact with ChatGPT
 def chat_with_gpt(transcribed_text):
-    response = client.completions.create(
+    response = openai.Completion.create(
         model="text-davinci-003",
         prompt=transcribed_text,
         max_tokens=100
@@ -58,7 +58,7 @@ def chat_with_gpt(transcribed_text):
 
 # Function to create speech using OpenAI's voice synthesis
 def create_speech(text):
-    response = client.audio.create(
+    response = openai.Audio.create(
         model="voice-synthesis",
         text=text
     )
