@@ -4,7 +4,8 @@ import numpy as np
 import threading
 import queue
 import sys
-import time
+import os
+from scipy.io.wavfile import write
 from keypad_controller import KeypadController
 from openai_key import get_key
 
@@ -31,15 +32,17 @@ def record_audio(samplerate, channels):
 
     return np.concatenate(audio_data, axis=0)
 
+# Function to save audio to a WAV file
+def save_audio_to_wav(audio_data, samplerate, filename):
+    write(filename, samplerate, audio_data.astype(np.int16))
+
 # Function to transcribe audio using Whisper
-def transcribe_audio(audio_data, samplerate):
-    audio_base64 = openai.util.array_to_base64(audio_data, dtype="int16", shape=(len(audio_data), 1))
-    response = openai.Audio.transcriptions.create(
-        audio=audio_base64,
-        model="whisper-1",
-        encoding="pcm_s16le",
-        sample_rate=samplerate
-    )
+def transcribe_audio(filename):
+    with open(filename, "rb") as audio_file:
+        response = openai.Audio.transcribe(
+            model="whisper-1",
+            file=audio_file
+        )
     return response['text']
 
 # Function to interact with ChatGPT
@@ -67,13 +70,16 @@ def process_audio():
     channels = 1  # Number of audio channels
 
     audio_data = record_audio(samplerate, channels)
-    transcribed_text = transcribe_audio(audio_data, samplerate)
+    wav_filename = "recording.wav"
+    save_audio_to_wav(audio_data, samplerate, wav_filename)
+    transcribed_text = transcribe_audio(wav_filename)
     print(f"Transcribed Text: {transcribed_text}")
 
     response_text = chat_with_gpt(transcribed_text)
     print(f"ChatGPT Response: {response_text}")
 
     create_speech(response_text)
+    os.remove(wav_filename)  # Clean up the temporary file
 
 # Function to handle keypad input
 class KeypadListener:
