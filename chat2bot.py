@@ -101,7 +101,6 @@ def main():
     controller.key_pressed = listener.key_pressed
     controller.key_released = listener.key_released
 
-    listener.start()
 
 if __name__ == "__main__":
     main()
