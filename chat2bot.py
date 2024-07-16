@@ -7,7 +7,6 @@ import sys
 import time
 import os
 from scipy.io.wavfile import write
-from pathlib import Path
 from keypad_controller import KeypadController
 from openai_key import get_key
 
@@ -39,10 +38,10 @@ def save_audio_to_wav(audio_data, samplerate, filename):
     write(filename, samplerate, audio_data.astype(np.int16))
 
 # Function to transcribe audio using OpenAI
-def transcribe_audio(filename):
-    with open(filename, "rb") as audio_file:
-        response = openai.Audio.transcribe("whisper-1", audio_file)
-    return response['text']
+def transcribe_audio(audio_file_path):
+    with open(audio_file_path, 'rb') as audio_file:
+        transcription = openai.Audio.transcribe(model="whisper-1", file=audio_file)
+    return transcription['text']
 
 # Function to interact with ChatGPT
 def chat_with_gpt(transcribed_text):
@@ -55,21 +54,16 @@ def chat_with_gpt(transcribed_text):
 
 # Function to create speech using OpenAI's voice synthesis
 def create_speech(text):
-    speech_file_path = Path(__file__).parent / "speech.wav"
-    response = openai.Audio.speech.create(
-        model="tts-1",
-        voice="alloy",
-        input=text
+    response = openai.Audio.create(
+        model="text-to-speech",
+        input={"text": text},
+        voice="default",  # or specify the desired voice if applicable
+        response_format="wav"  # Ensure the correct audio format is used
     )
 
-    with open(speech_file_path, "wb") as f:
-        f.write(response['audio_content'])
-
-    audio_data, samplerate = sf.read(speech_file_path)
-    sd.play(audio_data, samplerate)
+    audio_data = np.frombuffer(response['data'], dtype=np.int16)
+    sd.play(audio_data, samplerate=44100)
     sd.wait()
-
-    os.remove(speech_file_path)  # Clean up the temporary file
 
 # Function to process audio and interact with ChatGPT
 def process_audio():
@@ -106,7 +100,7 @@ class KeypadListener:
     def key_released(self, key):
         print(key + " Released")
         if key == '*':
-            if recording_event.is_set():
+            if recording_event is_set():
                 recording_event.clear()
                 print("Recording stopped.")
                 if self.recording_thread is not None:
