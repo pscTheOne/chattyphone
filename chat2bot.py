@@ -100,7 +100,7 @@ class KeypadListener:
     def key_released(self, key):
         print(key + " Released")
         if key == '*':
-            if recording_event is_set():
+            if recording_event.set():
                 recording_event.clear()
                 print("Recording stopped.")
                 if self.recording_thread is not None:
