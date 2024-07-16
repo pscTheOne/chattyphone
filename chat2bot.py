@@ -102,7 +102,7 @@ def main():
     controller.key_pressed = listener.key_pressed
     controller.key_released = listener.key_released
     while True:
-        wait(1)
+        sleep(1)
         pass
 
 
