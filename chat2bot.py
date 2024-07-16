@@ -86,20 +86,16 @@ class KeypadListener:
                 recording_event.set()
                 print("Recording started.")
                 process_audio()
-
-    def key_released(self, key):
-        print(key + " Released")
-        if key == '*':
-            if recording_event.is_set():
+            else:
                 recording_event.clear()
                 print("Recording stopped.")
+
 
 def main():
     controller = KeypadController()
     listener = KeypadListener(controller)
 
     controller.key_pressed = listener.key_pressed
-    controller.key_released = listener.key_released
 
     while True:
         controller.run()  # Start the keypad controller
