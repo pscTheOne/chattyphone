@@ -4,6 +4,7 @@ import numpy as np
 import threading
 import queue
 import sys
+import time
 from keypad_controller import KeypadController
 from openai_key import get_key
 
@@ -78,6 +79,7 @@ def process_audio():
 class KeypadListener:
     def __init__(self, controller):
         self.controller = controller
+        self.recording_thread = None
 
     def key_pressed(self, key):
         print(key + " Pressed")
@@ -85,21 +87,27 @@ class KeypadListener:
             if not recording_event.is_set():
                 recording_event.set()
                 print("Recording started.")
-                process_audio()
-            else:
+                self.recording_thread = threading.Thread(target=process_audio)
+                self.recording_thread.start()
+
+    def key_released(self, key):
+        print(key + " Released")
+        if key == '*':
+            if recording_event.is_set():
                 recording_event.clear()
                 print("Recording stopped.")
-
+                if self.recording_thread is not None:
+                    self.recording_thread.join()
 
 def main():
     controller = KeypadController()
     listener = KeypadListener(controller)
 
     controller.key_pressed = listener.key_pressed
+    controller.key_released = listener.key_released
 
     while True:
         controller.run()  # Start the keypad controller
-        listener.start()
         time.sleep(0.1)  # Small sleep to prevent high CPU usage
 
 if __name__ == "__main__":
