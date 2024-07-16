@@ -79,16 +79,14 @@ class KeypadListener:
     def __init__(self, controller):
         self.controller = controller
 
-    def start(self):
-        self.controller.run()
-
     def key_pressed(self, key):
         print(key + " Pressed")
         if key == '*':
-            if recording_event.is_set():
+            if not recording_event.is_set():
                 recording_event.set()
                 print("Recording started.")
                 process_audio()
+
     def key_released(self, key):
         print(key + " Released")
         if key == '*':
@@ -96,14 +94,13 @@ class KeypadListener:
                 recording_event.clear()
                 print("Recording stopped.")
 
-
-
-
 def main():
     controller = KeypadController()
     listener = KeypadListener(controller)
 
-    controller.run()  # Start the keypad controller
+    controller.key_pressed = listener.key_pressed
+    controller.key_released = listener.key_released
+
     listener.start()
 
 if __name__ == "__main__":
