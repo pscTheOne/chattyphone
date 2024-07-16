@@ -51,7 +51,7 @@ def transcribe_audio(filename):
 # Function to interact with ChatGPT
 def chat_with_gpt(transcribed_text):
     response = client.completions.create(
-        model="text-davinci-003",
+        model="gpt-4o",
         prompt=transcribed_text,
         max_tokens=100
     )
