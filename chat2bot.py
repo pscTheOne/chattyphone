@@ -50,7 +50,7 @@ def transcribe_audio(filename):
 
 # Function to interact with ChatGPT
 def chat_with_gpt(transcribed_text):
-        completion = client.completions.create(
+    completion = client.completions.create(
         model="gpt-4",
         prompt=transcribed_text,
         max_tokens=100
