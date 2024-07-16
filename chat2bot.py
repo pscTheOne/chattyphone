@@ -103,7 +103,7 @@ def main():
     controller = KeypadController()
     listener = KeypadListener(controller)
 
-    listner.run()  # Start the keypad controller
+    listener.run()  # Start the keypad controller
 
 if __name__ == "__main__":
     main()
