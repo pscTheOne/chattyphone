@@ -7,12 +7,12 @@ import sys
 import time
 import os
 from scipy.io.wavfile import write
+from pathlib import Path
 from keypad_controller import KeypadController
 from openai_key import get_key
 
 # Set up your OpenAI API key
-openai_api_key = get_key()
-client = openai.Client(api_key=openai_api_key)
+openai.api_key = get_key()
 
 # Global variables
 q = queue.Queue()
@@ -41,34 +41,35 @@ def save_audio_to_wav(audio_data, samplerate, filename):
 # Function to transcribe audio using OpenAI
 def transcribe_audio(filename):
     with open(filename, "rb") as audio_file:
-        response = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio_file
-        )
-    response_dict = response.model_dump()
-    return response_dict['text']
+        response = openai.Audio.transcribe("whisper-1", audio_file)
+    return response['text']
 
 # Function to interact with ChatGPT
 def chat_with_gpt(transcribed_text):
-    completion = client.completions.create(
-        model="gpt-3.5-turbo-instruct",
-        prompt=transcribed_text,
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": transcribed_text}],
         max_tokens=100
     )
-    return completion.choices[0].text
+    return completion.choices[0].message['content']
 
 # Function to create speech using OpenAI's voice synthesis
 def create_speech(text):
-    response = client.text_to_speech.create(
-        model="text-to-speech",
-        input=text,
-        voice="default",  # or specify the desired voice if applicable
-        audio_format="wav"  # Ensure the correct audio format is used
+    speech_file_path = Path(__file__).parent / "speech.wav"
+    response = openai.Audio.speech.create(
+        model="tts-1",
+        voice="alloy",
+        input=text
     )
 
-    audio_data = np.frombuffer(response['audio_content'], dtype=np.int16)
-    sd.play(audio_data, samplerate=44100)
+    with open(speech_file_path, "wb") as f:
+        f.write(response['audio_content'])
+
+    audio_data, samplerate = sf.read(speech_file_path)
+    sd.play(audio_data, samplerate)
     sd.wait()
+
+    os.remove(speech_file_path)  # Clean up the temporary file
 
 # Function to process audio and interact with ChatGPT
 def process_audio():
