@@ -40,9 +40,9 @@ def save_audio_to_wav(audio_data, samplerate, filename):
 # Function to transcribe audio using OpenAI
 def transcribe_audio(filename):
     with open(filename, "rb") as audio_file:
-        response = openai.Audio.transcriptions.create(
-            file=audio_file,
-            model="whisper-1"
+        response = openai.Audio.transcribe(
+            model="whisper-1",
+            file=audio_file
         )
     return response['text']
 
