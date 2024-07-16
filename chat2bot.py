@@ -50,13 +50,12 @@ def transcribe_audio(filename):
 
 # Function to interact with ChatGPT
 def chat_with_gpt(transcribed_text):
-    response = openai.Completion.create(
+        completion = client.completions.create(
         model="gpt-4",
         prompt=transcribed_text,
         max_tokens=100
     )
-    response_dict = response.model_dump()
-    return response_dict['choices'][0]['text'].strip()
+    return completion.choices[0].text
 
 # Function to create speech using OpenAI's voice synthesis
 def create_speech(text):
